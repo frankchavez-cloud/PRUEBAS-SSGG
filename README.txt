@@ -1,36 +1,19 @@
-DASHBOARD EVENTOS CAMPUS VILLA V3.0 EXECUTIVE PREMIUM
+DASHBOARD EVENTOS CAMPUS VILLA V3.1
 
-Archivos incluidos:
+Esta versión lee los eventos desde:
+CONTROL_EVENTOS.csv
+
+Archivos que debes subir/reemplazar en GitHub:
 - index.html
 - style.css
 - script.js
+- CONTROL_EVENTOS.csv
+
+Para actualizar eventos:
+1. Actualiza tu Excel.
+2. Guarda o exporta como CSV UTF-8 con el nombre CONTROL_EVENTOS.csv.
+3. Sube/reemplaza CONTROL_EVENTOS.csv en GitHub.
+4. Espera 1 a 3 minutos y actualiza la web.
 
 Contraseña inicial:
 villa2026
-
-Estructura definitiva para Excel:
-Fecha | Hora | Área Solicitante | N° OT | Evento / Actividad | Requerimientos | Prioridad | Categoría | Estado
-
-Funciones incluidas:
-- Vista mensual.
-- Vista semanal.
-- Calendario grande con colores por prioridad.
-- Feriados peruanos 2026.
-- Día actual resaltado.
-- KPIs compactos.
-- Filtros por área, estado y categoría.
-- Búsqueda por OT, evento o requerimiento.
-- Ventana emergente por fecha.
-- Scroll interno con evento central ampliado.
-- Diseño oscuro ejecutivo.
-
-Para publicar en GitHub Pages:
-1. Descomprimir el ZIP.
-2. Subir index.html, style.css y script.js al repositorio.
-3. Confirmar que index.html quede en la raíz.
-4. Activar GitHub Pages desde Settings > Pages.
-5. Abrir el enlace publicado.
-
-Nota:
-Actualmente usa datos de ejemplo dentro de script.js.
-La siguiente etapa es reemplazar esos datos por conexión al Excel/CSV publicado desde OneDrive.

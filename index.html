@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Centro de Control de Eventos Campus Villa V3.0</title>
+  <title>Centro de Control de Eventos Campus Villa V3.1</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="login" class="login-screen">
     <div class="login-card">
-      <div class="login-badge">V3.0</div>
+      <div class="login-badge">V3.1</div>
       <h1>Centro de Control de Eventos</h1>
       <p>Campus Villa</p>
       <input id="passwordInput" type="password" placeholder="Ingrese contraseña" />
@@ -21,7 +21,7 @@
   <main id="app" class="hidden">
     <header class="header">
       <section>
-        <div class="eyebrow">Dashboard Ejecutivo Premium</div>
+        <div class="eyebrow">Dashboard conectado a CSV</div>
         <h1>Centro de Control de Eventos</h1>
         <p>Campus Villa · Vista mensual y semanal</p>
       </section>
@@ -51,15 +51,9 @@
 
     <section class="filters">
       <input id="searchInput" placeholder="Buscar por OT, evento o requerimiento..." oninput="render()" />
-      <select id="areaFilter" onchange="render()">
-        <option value="">Todas las áreas</option>
-      </select>
-      <select id="estadoFilter" onchange="render()">
-        <option value="">Todos los estados</option>
-      </select>
-      <select id="categoriaFilter" onchange="render()">
-        <option value="">Todas las categorías</option>
-      </select>
+      <select id="areaFilter" onchange="render()"><option value="">Todas las áreas</option></select>
+      <select id="estadoFilter" onchange="render()"><option value="">Todos los estados</option></select>
+      <select id="categoriaFilter" onchange="render()"><option value="">Todas las categorías</option></select>
     </section>
 
     <section class="kpis">
@@ -78,6 +72,7 @@
       <span><i class="legend-dot today"></i>Hoy</span>
     </section>
 
+    <section id="statusMessage" class="status">Cargando eventos...</section>
     <section id="calendar" class="calendar"></section>
   </main>
 
@@ -91,7 +86,6 @@
         </div>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
-
       <div id="eventScroll" class="event-scroll"></div>
     </div>
   </div>
