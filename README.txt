@@ -1,19 +1,30 @@
-DASHBOARD EVENTOS CAMPUS VILLA V3.1
+DASHBOARD EVENTOS CAMPUS VILLA V4.0
 
-Esta versión lee los eventos desde:
-CONTROL_EVENTOS.csv
-
-Archivos que debes subir/reemplazar en GitHub:
+Archivos para subir a GitHub:
 - index.html
 - style.css
 - script.js
 - CONTROL_EVENTOS.csv
 
-Para actualizar eventos:
-1. Actualiza tu Excel.
-2. Guarda o exporta como CSV UTF-8 con el nombre CONTROL_EVENTOS.csv.
-3. Sube/reemplaza CONTROL_EVENTOS.csv en GitHub.
-4. Espera 1 a 3 minutos y actualiza la web.
+Archivo Excel editable:
+- PLANTILLA_CONTROL_EVENTOS_CAMPUS_VILLA_V4.xlsx
 
-Contraseña inicial:
+Nueva estructura:
+Fecha | Hora | Área Solicitante | N° OT | Evento / Actividad | Ubicación | Requerimientos | Prioridad | Categoría | Estado
+
+Novedades:
+- Columna Ubicación.
+- Filtro por ubicación.
+- KPI interactivos con ventanas desplegables.
+- Modal de eventos con ubicación y anotaciones.
+- Calendario con ubicación visible en cada día.
+- Prioridad separada de ubicación para colores correctos.
+
+Contraseña:
 villa2026
+
+Actualización:
+1. Edita el Excel V4.
+2. Guarda/exporta como CSV UTF-8 con nombre CONTROL_EVENTOS.csv.
+3. Reemplaza CONTROL_EVENTOS.csv en GitHub.
+4. Si cambias HTML/CSS/JS, reemplaza esos archivos también.

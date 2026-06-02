@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Centro de Control de Eventos Campus Villa V3.1</title>
+  <title>Centro de Control de Eventos Campus Villa V4.0</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="login" class="login-screen">
     <div class="login-card">
-      <div class="login-badge">V3.1</div>
+      <div class="login-badge">V4.0</div>
       <h1>Centro de Control de Eventos</h1>
       <p>Campus Villa</p>
       <input id="passwordInput" type="password" placeholder="Ingrese contraseña" />
@@ -21,9 +21,9 @@
   <main id="app" class="hidden">
     <header class="header">
       <section>
-        <div class="eyebrow">Dashboard conectado a CSV</div>
+        <div class="eyebrow">Dashboard conectado a CSV + ubicación</div>
         <h1>Centro de Control de Eventos</h1>
-        <p>Campus Villa · Vista mensual y semanal</p>
+        <p>Campus Villa · Eventos, ubicaciones y atenciones</p>
       </section>
 
       <section class="header-actions">
@@ -42,7 +42,6 @@
         <h2 id="monthTitle"></h2>
         <button onclick="changeMonth(1)">▶</button>
       </div>
-
       <div class="view-switch">
         <button id="btnMonth" class="active" onclick="setView('month')">Mensual</button>
         <button id="btnWeek" onclick="setView('week')">Semanal</button>
@@ -50,18 +49,19 @@
     </section>
 
     <section class="filters">
-      <input id="searchInput" placeholder="Buscar por OT, evento o requerimiento..." oninput="render()" />
+      <input id="searchInput" placeholder="Buscar por OT, evento, ubicación o requerimiento..." oninput="render()" />
       <select id="areaFilter" onchange="render()"><option value="">Todas las áreas</option></select>
+      <select id="ubicacionFilter" onchange="render()"><option value="">Todas las ubicaciones</option></select>
       <select id="estadoFilter" onchange="render()"><option value="">Todos los estados</option></select>
       <select id="categoriaFilter" onchange="render()"><option value="">Todas las categorías</option></select>
     </section>
 
     <section class="kpis">
-      <article class="kpi blue"><span id="kpiTotal">0</span><small>Eventos</small></article>
-      <article class="kpi green"><span id="kpiDone">0</span><small>Ejecutados</small></article>
-      <article class="kpi amber"><span id="kpiPending">0</span><small>Pendientes</small></article>
-      <article class="kpi red"><span id="kpiHigh">0</span><small>Prioridad alta</small></article>
-      <article class="kpi purple"><span id="kpiHoliday">0</span><small>Feriados Perú</small></article>
+      <article class="kpi blue" onclick="openKpiModal('eventos')"><span id="kpiTotal">0</span><small>Eventos</small></article>
+      <article class="kpi green" onclick="openKpiModal('ejecutados')"><span id="kpiDone">0</span><small>Ejecutados</small></article>
+      <article class="kpi amber" onclick="openKpiModal('pendientes')"><span id="kpiPending">0</span><small>Pendientes</small></article>
+      <article class="kpi red" onclick="openKpiModal('alta')"><span id="kpiHigh">0</span><small>Prioridad alta</small></article>
+      <article class="kpi purple" onclick="openKpiModal('feriados')"><span id="kpiHoliday">0</span><small>Feriados Perú</small></article>
     </section>
 
     <section class="legend">
@@ -87,6 +87,20 @@
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
       <div id="eventScroll" class="event-scroll"></div>
+    </div>
+  </div>
+
+  <div id="kpiModal" class="modal hidden">
+    <div class="modal-card kpi-modal-card">
+      <div class="modal-head">
+        <div>
+          <div class="eyebrow">Resumen ejecutivo</div>
+          <h2 id="kpiModalTitle"></h2>
+          <p id="kpiModalInfo"></p>
+        </div>
+        <button class="modal-close" onclick="closeKpiModal()">×</button>
+      </div>
+      <div id="kpiList" class="kpi-list"></div>
     </div>
   </div>
 

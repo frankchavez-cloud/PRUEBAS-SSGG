@@ -1,6 +1,6 @@
 const PASSWORD = "villa2026";
 let eventosBase = [];
-let currentDate = new Date(2026, 4, 1);
+let currentDate = new Date(2026, 5, 1);
 let currentView = "month";
 
 const feriadosPeru2026 = {
@@ -32,7 +32,6 @@ function login() {
     alert("Contraseña incorrecta");
   }
 }
-
 function logout() {
   document.getElementById("app").classList.add("hidden");
   document.getElementById("login").classList.remove("hidden");
@@ -82,13 +81,22 @@ function mapRow(r) {
     area: r["Área Solicitante"] || r["Area Solicitante"] || "",
     ot: r["N° OT"] || r["N OT"] || r["Numero OT"] || "",
     evento: r["Evento / Actividad"] || "",
+    ubicacion: r["Ubicación"] || r["Ubicacion"] || "",
     requerimientos: r["Requerimientos"] || "",
-    prioridad: r["Prioridad"] || "",
+    prioridad: normalizePriority(r["Prioridad"] || ""),
     categoria: r["Categoría"] || r["Categoria"] || "",
     estado: r["Estado"] || ""
   };
 }
 
+function normalizePriority(p) {
+  const s = String(p || "").trim();
+  const n = normalize(s);
+  if (n.includes("alta")) return "Alta";
+  if (n.includes("medio") || n.includes("media")) return "Media";
+  if (n.includes("baja") || n.includes("bajo")) return "Baja";
+  return s;
+}
 function normalizeDate(value) {
   value = String(value || "").trim();
   if (!value) return "";
@@ -101,23 +109,17 @@ function normalizeDate(value) {
   }
   return value;
 }
-
 function normalizeTime(value) {
   value = String(value || "").trim();
   if (!value) return "";
-  const match = value.match(/(\d{1,2}):(\d{2})/);
+  const match = value.match(/(\d{1,2})[:;](\d{2})/);
   if (match) return `${match[1].padStart(2,"0")}:${match[2]}`;
   return value;
 }
-
 function updateClock() {
   const now = new Date();
-  document.getElementById("currentDate").textContent = now.toLocaleDateString("es-PE", {
-    weekday: "long", day: "2-digit", month: "long", year: "numeric"
-  });
-  document.getElementById("currentTime").textContent = now.toLocaleTimeString("es-PE", {
-    hour: "2-digit", minute: "2-digit", second: "2-digit"
-  });
+  document.getElementById("currentDate").textContent = now.toLocaleDateString("es-PE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+  document.getElementById("currentTime").textContent = now.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 setInterval(updateClock, 1000);
 window.addEventListener("DOMContentLoaded", updateClock);
@@ -145,22 +147,24 @@ function normalize(text) { return String(text || "").toLowerCase().normalize("NF
 function priorityClass(priority) {
   const p = normalize(priority);
   if (p.includes("alta")) return "alta";
-  if (p.includes("medio") || p.includes("media")) return "media";
-  if (p.includes("baja") || p.includes("bajo")) return "baja";
+  if (p.includes("media")) return "media";
+  if (p.includes("baja")) return "baja";
   return "";
 }
 function filteredEvents() {
   const search = normalize(document.getElementById("searchInput")?.value || "");
   const area = document.getElementById("areaFilter")?.value || "";
+  const ubicacion = document.getElementById("ubicacionFilter")?.value || "";
   const estado = document.getElementById("estadoFilter")?.value || "";
   const categoria = document.getElementById("categoriaFilter")?.value || "";
   return eventosBase.filter(e => {
-    const blob = normalize(`${e.ot} ${e.evento} ${e.requerimientos} ${e.area} ${e.estado} ${e.categoria}`);
-    return (!search || blob.includes(search)) && (!area || e.area === area) && (!estado || e.estado === estado) && (!categoria || e.categoria === categoria);
+    const blob = normalize(`${e.ot} ${e.evento} ${e.requerimientos} ${e.area} ${e.estado} ${e.categoria} ${e.ubicacion}`);
+    return (!search || blob.includes(search)) && (!area || e.area === area) && (!ubicacion || e.ubicacion === ubicacion) && (!estado || e.estado === estado) && (!categoria || e.categoria === categoria);
   });
 }
 function initFilters() {
   fillSelect("areaFilter", [...new Set(eventosBase.map(e => e.area).filter(Boolean))].sort());
+  fillSelect("ubicacionFilter", [...new Set(eventosBase.map(e => e.ubicacion).filter(Boolean))].sort());
   fillSelect("estadoFilter", [...new Set(eventosBase.map(e => e.estado).filter(Boolean))].sort());
   fillSelect("categoriaFilter", [...new Set(eventosBase.map(e => e.categoria).filter(Boolean))].sort());
 }
@@ -218,24 +222,45 @@ function renderDayCell(calendar, date, isWeek=false) {
   if (topPriority) div.classList.add(`priority-${topPriority}`);
   div.onclick = () => openModal(iso);
   const mainArea = events[0]?.area || "";
+  const mainLocation = events.find(e => e.ubicacion)?.ubicacion || "";
   div.innerHTML = `
     <div class="day-number">${date.getDate()}</div>
     ${isWeek ? `<div class="area-label">${date.toLocaleDateString("es-PE", { month: "long" })}</div>` : ""}
     ${holiday ? `<div class="holiday-label">🇵🇪 ${holiday}</div>` : ""}
     <div class="event-summary"><span class="event-chip">${events.length} EV</span></div>
-    ${mainArea ? `<div class="area-label">${mainArea}${events.length > 1 ? " +" + (events.length-1) : ""}</div>` : ""}
+    ${mainLocation ? `<div class="location-label">📍 ${mainLocation}</div>` : ""}
+    ${mainArea ? `<div class="area-label">🏢 ${mainArea}${events.length > 1 ? " +" + (events.length-1) : ""}</div>` : ""}
     <div class="mini-dots">${events.slice(0,10).map(e => `<i class="mini-dot ${priorityClass(e.prioridad)}"></i>`).join("")}</div>`;
   calendar.appendChild(div);
 }
-function updateKPIs() {
+function monthEvents() {
   const year = currentDate.getFullYear(), month = currentDate.getMonth();
-  const monthEvents = filteredEvents().filter(e => { const d = parseDate(e.fecha); return d.getFullYear() === year && d.getMonth() === month; });
+  return filteredEvents().filter(e => { const d = parseDate(e.fecha); return d.getFullYear() === year && d.getMonth() === month; });
+}
+function updateKPIs() {
+  const events = monthEvents();
+  const year = currentDate.getFullYear(), month = currentDate.getMonth();
   const holidayCount = Object.keys(feriadosPeru2026).filter(iso => { const d = parseDate(iso); return d.getFullYear() === year && d.getMonth() === month; }).length;
-  document.getElementById("kpiTotal").textContent = monthEvents.length;
-  document.getElementById("kpiDone").textContent = monthEvents.filter(e => normalize(e.estado).includes("ejecut")).length;
-  document.getElementById("kpiPending").textContent = monthEvents.filter(e => normalize(e.estado).includes("pend")).length;
-  document.getElementById("kpiHigh").textContent = monthEvents.filter(e => priorityClass(e.prioridad)==="alta").length;
+  document.getElementById("kpiTotal").textContent = events.length;
+  document.getElementById("kpiDone").textContent = events.filter(e => normalize(e.estado).includes("ejecut")).length;
+  document.getElementById("kpiPending").textContent = events.filter(e => normalize(e.estado).includes("pend")).length;
+  document.getElementById("kpiHigh").textContent = events.filter(e => priorityClass(e.prioridad)==="alta").length;
   document.getElementById("kpiHoliday").textContent = holidayCount;
+}
+function eventCardHTML(e) {
+  return `<article class="event-card ${priorityClass(e.prioridad)}">
+      <div class="event-time">${e.hora}</div>
+      <div class="event-title">${e.evento}</div>
+      <div class="badges">
+        <span class="badge">Área: ${e.area || "-"}</span>
+        <span class="badge">📍 ${e.ubicacion || "Sin ubicación"}</span>
+        <span class="badge">${e.ot || "Sin OT"}</span>
+        <span class="badge">${e.prioridad || "-"}</span>
+        <span class="badge">${e.categoria || "-"}</span>
+        <span class="badge">${e.estado || "-"}</span>
+      </div>
+      <div class="requirements"><strong>Requerimientos / atención:</strong><br>${e.requerimientos || "Sin anotaciones registradas."}</div>
+    </article>`;
 }
 function openModal(iso) {
   const modal = document.getElementById("eventModal");
@@ -245,20 +270,54 @@ function openModal(iso) {
   document.getElementById("modalDate").textContent = date.toLocaleDateString("es-PE", { weekday:"long", day:"2-digit", month:"long", year:"numeric" }).toUpperCase();
   document.getElementById("modalInfo").textContent = feriadosPeru2026[iso] ? `🇵🇪 ${feriadosPeru2026[iso]} · ${events.length} evento(s)` : `${events.length} evento(s) registrado(s)`;
   if (!events.length) scroll.innerHTML = `<div class="no-events">No hay eventos registrados para este día.</div>`;
-  else scroll.innerHTML = events.map(e => `
-    <article class="event-card ${priorityClass(e.prioridad)}">
-      <div class="event-time">${e.hora}</div>
-      <div class="event-title">${e.evento}</div>
-      <div class="badges">
-        <span class="badge">Área: ${e.area}</span><span class="badge">${e.ot}</span><span class="badge">${e.prioridad}</span><span class="badge">${e.categoria}</span><span class="badge">${e.estado}</span>
-      </div>
-      <div class="requirements"><strong>Requerimientos:</strong><br>${e.requerimientos}</div>
-    </article>`).join("");
+  else scroll.innerHTML = events.map(eventCardHTML).join("");
   modal.classList.remove("hidden");
   scroll.scrollTop = 0;
   setTimeout(updateFocusedCard, 100);
 }
 function closeModal() { document.getElementById("eventModal").classList.add("hidden"); }
+
+function openKpiModal(type) {
+  const list = document.getElementById("kpiList");
+  const title = document.getElementById("kpiModalTitle");
+  const info = document.getElementById("kpiModalInfo");
+  const events = monthEvents().sort((a,b) => a.fecha.localeCompare(b.fecha) || a.hora.localeCompare(b.hora));
+  let rows = [];
+  if (type === "eventos") { title.textContent = "TODOS LOS EVENTOS"; rows = events; }
+  if (type === "ejecutados") { title.textContent = "EVENTOS EJECUTADOS"; rows = events.filter(e => normalize(e.estado).includes("ejecut")); }
+  if (type === "pendientes") { title.textContent = "EVENTOS PENDIENTES"; rows = events.filter(e => normalize(e.estado).includes("pend")); }
+  if (type === "alta") { title.textContent = "PRIORIDAD ALTA"; rows = events.filter(e => priorityClass(e.prioridad)==="alta"); }
+  if (type === "feriados") {
+    title.textContent = "FERIADOS PERÚ";
+    const y = currentDate.getFullYear(), m = currentDate.getMonth();
+    const holidays = Object.entries(feriadosPeru2026).filter(([iso]) => {
+      const d = parseDate(iso); return d.getFullYear() === y && d.getMonth() === m;
+    }).sort();
+    info.textContent = `${holidays.length} feriado(s) en el mes`;
+    list.innerHTML = holidays.length ? holidays.map(([iso, name]) => {
+      const d = parseDate(iso).toLocaleDateString("es-PE", { day:"2-digit", month:"short", year:"numeric" });
+      return `<article class="kpi-row alta"><div class="kpi-row-title">🇵🇪 ${name}</div><div class="kpi-meta">${d}</div></article>`;
+    }).join("") : `<div class="no-events">No hay feriados registrados en este mes.</div>`;
+    document.getElementById("kpiModal").classList.remove("hidden");
+    return;
+  }
+  info.textContent = `${rows.length} registro(s) del mes seleccionado`;
+  list.innerHTML = rows.length ? rows.map(e => {
+    const d = parseDate(e.fecha).toLocaleDateString("es-PE", { day:"2-digit", month:"short" });
+    return `<article class="kpi-row ${priorityClass(e.prioridad)}">
+      <div class="kpi-row-title">${d} · ${e.hora} · ${e.evento}</div>
+      <div class="kpi-meta">
+        <strong>Área:</strong> ${e.area || "-"}<br>
+        <strong>Ubicación:</strong> ${e.ubicacion || "Sin ubicación"}<br>
+        <strong>OT:</strong> ${e.ot || "-"} · <strong>Estado:</strong> ${e.estado || "-"}<br>
+        <strong>Anotación:</strong> ${e.requerimientos || "Sin anotaciones registradas."}
+      </div>
+    </article>`;
+  }).join("") : `<div class="no-events">No hay registros para este indicador.</div>`;
+  document.getElementById("kpiModal").classList.remove("hidden");
+}
+function closeKpiModal() { document.getElementById("kpiModal").classList.add("hidden"); }
+
 function updateFocusedCard() {
   const container = document.getElementById("eventScroll");
   const cards = container.querySelectorAll(".event-card");
@@ -274,4 +333,4 @@ function updateFocusedCard() {
   if (closest) closest.classList.add("focused");
 }
 document.getElementById("eventScroll").addEventListener("scroll", updateFocusedCard);
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeModal(); closeKpiModal(); } });
