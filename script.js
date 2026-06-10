@@ -316,9 +316,22 @@ function updateKPIs() {
   const year = currentDate.getFullYear(), month = currentDate.getMonth();
   const holidayCount = Object.keys(feriadosPeru2026).filter(iso => { const d = parseDate(iso); return d.getFullYear() === year && d.getMonth() === month; }).length;
   document.getElementById("kpiTotal").textContent = events.length;
-  document.getElementById("kpiDone").textContent = events.filter(e => normalize(e.estado).includes("ejecut")).length;
+  const hoyIso = toISODate(new Date());
+  const hoyEventos = events.filter(e => e.fecha === hoyIso);
+  document.getElementById("kpiDone").textContent = hoyEventos.length;
   document.getElementById("kpiPending").textContent = events.filter(e => normalize(e.estado).includes("pend")).length;
-  document.getElementById("kpiHigh").textContent = events.filter(e => priorityClass(e.prioridad)==="alta").length;
+  const ahora = new Date();
+  let proximoTxt = "0";
+  const futuros = hoyEventos.filter(e => e.hora).map(e=>{
+    const [h,m]=String(e.hora).split(":");
+    const d=new Date(); d.setHours(+h||0,+m||0,0,0);
+    return {e,d};
+  }).filter(x=>x.d>ahora).sort((a,b)=>a.d-b.d);
+  if(futuros.length){
+    const mins=Math.floor((futuros[0].d-ahora)/60000);
+    proximoTxt=`${Math.floor(mins/60)}h ${mins%60}m`;
+  }
+  document.getElementById("kpiHigh").textContent = proximoTxt;
   document.getElementById("kpiHoliday").textContent = holidayCount;
 }
 function eventCardHTML(e) {
