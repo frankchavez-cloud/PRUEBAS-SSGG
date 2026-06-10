@@ -377,6 +377,8 @@ function openKpiModal(type) {
   const events = monthEvents().sort((a,b) => a.fecha.localeCompare(b.fecha) || a.hora.localeCompare(b.hora));
   let rows = [];
   if (type === "eventos") { title.textContent = "TODOS LOS EVENTOS"; rows = events; }
+  if (type === "hoy") { title.textContent = "EVENTOS DE HOY"; rows = events.filter(e=>e.fecha===toISODate(new Date())); }
+  if (type === "proximo") { title.textContent = "PRÓXIMO EVENTO"; rows = events.filter(e=>e.fecha>=toISODate(new Date())).slice(0,1); }
   if (type === "ejecutados") { title.textContent = "EVENTOS EJECUTADOS"; rows = events.filter(e => normalize(e.estado).includes("ejecut")); }
   if (type === "pendientes") { title.textContent = "EVENTOS PENDIENTES"; rows = events.filter(e => normalize(e.estado).includes("pend")); }
   if (type === "alta") { title.textContent = "PRIORIDAD ALTA"; rows = events.filter(e => priorityClass(e.prioridad)==="alta"); }
