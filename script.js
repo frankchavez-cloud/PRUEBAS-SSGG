@@ -1,3 +1,18 @@
+
+function buildOperativoHTML(events){
+ return events.sort((a,b)=>a.hora.localeCompare(b.hora)).map(e=>`
+ <div class="operativo-card">
+ <h3>📍 ${e.ubicacion||"Sin ubicación"}</h3>
+ <div><strong>Hora:</strong> ${e.hora}</div>
+ <div><strong>Evento:</strong> ${e.evento}</div>
+ <div><strong>Requerimientos:</strong></div>
+ <ul>${String(e.requerimientos||"").split(/[\n;]/).filter(x=>x.trim()).map(x=>`<li>${x}</li>`).join("")}</ul>
+ </div>`).join("");
+}
+function showModalTab(tab){
+ document.getElementById("eventScroll").classList.toggle("hidden",tab!=="eventos");
+ document.getElementById("operativoScroll").classList.toggle("hidden",tab!=="operativo");
+}
 const PASSWORD = "villa2026";
 let eventosBase = [];
 let currentDate = new Date(2026, 5, 1);
@@ -27,7 +42,7 @@ function login() {
   if (pass === PASSWORD) {
     document.getElementById("login").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
-    cargarCSV();
+    cargarExcel();
   } else {
     alert("Contraseña incorrecta");
   }
@@ -37,18 +52,29 @@ function logout() {
   document.getElementById("login").classList.remove("hidden");
 }
 
-async function cargarCSV() {
+async function cargarExcel() {
   const status = document.getElementById("statusMessage");
   try {
-    const response = await fetch("CONTROL_EVENTOS.csv?t=" + Date.now());
-    if (!response.ok) throw new Error("No se pudo leer CONTROL_EVENTOS.csv");
-    const text = await response.text();
-    eventosBase = parseCSV(text).map(mapRow).filter(e => e.fecha && e.evento);
+    const response = await fetch("PLANTILLA CONTROL EVENTOS CAMPUS VILLA.xlsx?t=" + Date.now());
+    if (!response.ok) throw new Error("No se pudo leer PLANTILLA CONTROL EVENTOS CAMPUS VILLA.xlsx");
+    console.log("URL Excel:", response.url);
+console.log("STATUS:", response.status);
+
+    const arrayBuffer = await response.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: "array", cellDates: true });
+
+    const sheetName = workbook.SheetNames.includes("EVENTOS") ? "EVENTOS" : workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
+
+    eventosBase = rows.map(mapRow).filter(e => e.fecha && e.evento);
+
     initFilters();
-    status.textContent = `Eventos cargados: ${eventosBase.length}`;
+    status.textContent = `Eventos cargados desde Excel: ${eventosBase.length}`;
     render();
   } catch (err) {
-    status.textContent = "Error: no se pudo cargar CONTROL_EVENTOS.csv. Verifica que esté subido junto a index.html.";
+    status.textContent = "Error: no se pudo cargar el Excel. Verifica que 'PLANTILLA CONTROL EVENTOS CAMPUS VILLA.xlsx' esté subido junto a index.html.";
     console.error(err);
   }
 }
@@ -61,7 +87,7 @@ function parseCSV(text) {
     const c = text[i], n = text[i + 1];
     if (c === '"' && inQuotes && n === '"') { field += '"'; i++; }
     else if (c === '"') inQuotes = !inQuotes;
-    else if (c === "," && !inQuotes) { row.push(field); field = ""; }
+    else if ((c === "," || c === ";") && !inQuotes) { row.push(field); field = ""; }
     else if ((c === "\n" || c === "\r") && !inQuotes) {
       if (c === "\r" && n === "\n") i++;
       row.push(field); field = "";
@@ -98,23 +124,71 @@ function normalizePriority(p) {
   return s;
 }
 function normalizeDate(value) {
-  value = String(value || "").trim();
-  if (!value) return "";
-  const parts = value.split(/[\/\-]/);
-  if (parts.length === 3) {
-    let d, m, y;
-    if (parts[0].length === 4) { y = parts[0]; m = parts[1]; d = parts[2]; }
-    else { d = parts[0]; m = parts[1]; y = parts[2]; }
-    return `${String(y).padStart(4,"0")}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  if (value === null || value === undefined || value === "") return "";
+
+  if (value instanceof Date && !isNaN(value)) {
+    const y = value.getFullYear();
+    const m = String(value.getMonth() + 1).padStart(2, "0");
+    const d = String(value.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
   }
-  return value;
+
+  if (typeof value === "number") {
+    const date = new Date(Math.round((value - 25569) * 86400 * 1000));
+    const y = date.getUTCFullYear();
+    const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const d = String(date.getUTCDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  let s = String(value || "").trim();
+  if (!s) return "";
+
+  let matchIso = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+  if (matchIso) {
+    const y = matchIso[1];
+    const m = String(matchIso[2]).padStart(2, "0");
+    const d = String(matchIso[3]).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  const parts = s.split(/[\/\-]/);
+
+if (parts.length === 3) {
+
+    // YYYY-MM-DD
+    if (parts[0].length === 4) {
+        return `${parts[0]}-${parts[1].padStart(2,"0")}-${parts[2].padStart(2,"0")}`;
+    }
+
+    // DD/MM/YY o DD/MM/YYYY
+    let year = parts[2];
+
+    if (year.length === 2) {
+        year = "20" + year;
+    }
+
+    return `${year}-${parts[1].padStart(2,"0")}-${parts[0].padStart(2,"0")}`;
+}
+
+  return s;
 }
 function normalizeTime(value) {
-  value = String(value || "").trim();
-  if (!value) return "";
-  const match = value.match(/(\d{1,2})[:;](\d{2})/);
+  if (value === null || value === undefined || value === "") return "";
+
+  if (value instanceof Date && !isNaN(value)) {
+    const h = String(value.getHours()).padStart(2, "0");
+    const m = String(value.getMinutes()).padStart(2, "0");
+    return `${h}:${m}`;
+  }
+
+  const s = String(value || "").trim();
+  if (!s) return "";
+
+  const match = s.match(/(\d{1,2})[:;](\d{2})/);
   if (match) return `${match[1].padStart(2,"0")}:${match[2]}`;
-  return value;
+
+  return s;
 }
 function updateClock() {
   const now = new Date();
@@ -251,15 +325,31 @@ function eventCardHTML(e) {
   return `<article class="event-card ${priorityClass(e.prioridad)}">
       <div class="event-time">${e.hora}</div>
       <div class="event-title">${e.evento}</div>
-      <div class="badges">
-        <span class="badge">Área: ${e.area || "-"}</span>
-        <span class="badge">📍 ${e.ubicacion || "Sin ubicación"}</span>
-        <span class="badge">${e.ot || "Sin OT"}</span>
-        <span class="badge">${e.prioridad || "-"}</span>
-        <span class="badge">${e.categoria || "-"}</span>
-        <span class="badge">${e.estado || "-"}</span>
-      </div>
-      <div class="requirements"><strong>Requerimientos / atención:</strong><br>${e.requerimientos || "Sin anotaciones registradas."}</div>
+ <div class="badges">
+  <span class="badge area">🔴 Área: ${e.area || "-"}</span>
+  <span class="badge sede">🔵 Sede: ${e.ubicacion || "Sin ubicación"}</span>
+  <span class="badge ot">🟣 OT/SOL: ${e.ot || "Sin OT"}</span>
+  <span class="badge prioridad">🟠 Prioridad: ${e.prioridad || "-"}</span>
+</div>
+      <div class="requirements">
+<strong>Requerimientos / atención:</strong>
+
+<ul>
+${(e.requerimientos || "")
+    .replace(/Requerimiento:/gi, "<h4>📋 Requerimiento</h4>")
+    .replace(/Layout:/gi, "<h4>📐 Layout</h4>")
+    .replace(/Instalación:/gi, "<h4>🔧 Instalación</h4>")
+    .replace(/Retiro:/gi, "<h4>🚚 Retiro</h4>")
+    .split(/[\n;]+/)
+    .filter(x => x.trim() !== "")
+    .map(x => {
+        if(x.includes("<h4>")) return x;
+        return `<li>✓ ${x.trim()}</li>`;
+    })
+    .join("")}
+</ul>
+
+</div>
     </article>`;
 }
 function openModal(iso) {
@@ -271,6 +361,9 @@ function openModal(iso) {
   document.getElementById("modalInfo").textContent = feriadosPeru2026[iso] ? `🇵🇪 ${feriadosPeru2026[iso]} · ${events.length} evento(s)` : `${events.length} evento(s) registrado(s)`;
   if (!events.length) scroll.innerHTML = `<div class="no-events">No hay eventos registrados para este día.</div>`;
   else scroll.innerHTML = events.map(eventCardHTML).join("");
+  document.getElementById("eventScroll").innerHTML = events.length ? events.map(eventCardHTML).join("") : `<div class="no-events">No hay eventos registrados para este día.</div>`;
+  document.getElementById("operativoScroll").innerHTML = buildOperativoHTML(events);
+  showModalTab("eventos");
   modal.classList.remove("hidden");
   scroll.scrollTop = 0;
   setTimeout(updateFocusedCard, 100);
