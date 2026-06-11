@@ -634,3 +634,17 @@ button:hover,
 .modal-tabs button{padding:8px 12px;font-weight:bold}
 .operativo-card{border:1px solid #ddd;border-radius:8px;padding:10px;margin-bottom:10px}
 .hidden{display:none}
+
+
+/* V7.1 modal ampliado */
+#kpiModal .modal-content,
+.modal-content.large{
+  width:95vw !important;
+  height:90vh !important;
+  max-width:95vw !important;
+}
+
+#kpiModalBody{
+  max-height:78vh !important;
+}
+
