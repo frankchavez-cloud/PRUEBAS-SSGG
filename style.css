@@ -648,3 +648,18 @@ button:hover,
   max-height:78vh !important;
 }
 
+
+
+/* V7.1 */
+.kpi-modal-card{
+ width:96vw !important;
+ max-width:96vw !important;
+ height:92vh !important;
+}
+.kpi-list{
+ height:78vh !important;
+ overflow-y:auto;
+}
+.kpi-row{
+ width:98% !important;
+}

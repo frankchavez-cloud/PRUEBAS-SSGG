@@ -383,45 +383,33 @@ function openModal(iso) {
 }
 function closeModal() { document.getElementById("eventModal").classList.add("hidden"); }
 
+
 function openKpiModal(type) {
   const list = document.getElementById("kpiList");
   const title = document.getElementById("kpiModalTitle");
   const info = document.getElementById("kpiModalInfo");
-  const events = monthEvents().sort((a,b) => a.fecha.localeCompare(b.fecha) || a.hora.localeCompare(b.hora));
-  let rows = [];
-  if (type === "eventos") { title.textContent = "TODOS LOS EVENTOS"; rows = events; }
-  if (type === "hoy") { title.textContent = "EVENTOS DE HOY"; rows = events.filter(e=>e.fecha===toISODate(new Date())); }
-  if (type === "proximo") { title.textContent = "PRÓXIMO EVENTO"; rows = events.filter(e=>e.fecha>=toISODate(new Date())).slice(0,1); }
-  if (type === "ejecutados") { title.textContent = "EVENTOS EJECUTADOS"; rows = events.filter(e => normalize(e.estado).includes("ejecut")); }
-  if (type === "pendientes") { title.textContent = "EVENTOS PENDIENTES"; rows = events.filter(e => normalize(e.estado).includes("pend")); }
-  if (type === "alta") { title.textContent = "PRIORIDAD ALTA"; rows = events.filter(e => priorityClass(e.prioridad)==="alta"); }
-  if (type === "feriados") {
-    title.textContent = "FERIADOS PERÚ";
-    const y = currentDate.getFullYear(), m = currentDate.getMonth();
-    const holidays = Object.entries(feriadosPeru2026).filter(([iso]) => {
-      const d = parseDate(iso); return d.getFullYear() === y && d.getMonth() === m;
-    }).sort();
-    info.textContent = `${holidays.length} feriado(s) en el mes`;
-    list.innerHTML = holidays.length ? holidays.map(([iso, name]) => {
-      const d = parseDate(iso).toLocaleDateString("es-PE", { day:"2-digit", month:"short", year:"numeric" });
-      return `<article class="kpi-row alta"><div class="kpi-row-title">🇵🇪 ${name}</div><div class="kpi-meta">${d}</div></article>`;
-    }).join("") : `<div class="no-events">No hay feriados registrados en este mes.</div>`;
-    document.getElementById("kpiModal").classList.remove("hidden");
-    return;
+  const events = monthEvents().sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.hora.localeCompare(b.hora));
+
+  function operativoRows(rows){
+    return rows.map(e=>{
+      const reqs=(e.requerimientos||"").split("/").map(x=>x.trim()).filter(Boolean)
+        .map(r=>`<li>${r}</li>`).join("");
+      return `<article class="kpi-row">
+      <div class="kpi-row-title">${e.hora} | ${e.ubicacion||"-"}</div>
+      <div class="kpi-meta"><b>${e.evento}</b></div>
+      <ul>${reqs}</ul>
+      </article>`;
+    }).join("");
   }
-  info.textContent = `${rows.length} registro(s) del mes seleccionado`;
-  list.innerHTML = rows.length ? rows.map(e => {
-    const d = parseDate(e.fecha).toLocaleDateString("es-PE", { day:"2-digit", month:"short" });
-    return `<article class="kpi-row ${priorityClass(e.prioridad)}">
-      <div class="kpi-row-title">${d} · ${e.hora} · ${e.evento}</div>
-      <div class="kpi-meta">
-        <strong>Área:</strong> ${e.area || "-"}<br>
-        <strong>Ubicación:</strong> ${e.ubicacion || "Sin ubicación"}<br>
-        <strong>OT:</strong> ${e.ot || "-"} · <strong>Estado:</strong> ${e.estado || "-"}<br>
-        <strong>Anotación:</strong> ${e.requerimientos || "Sin anotaciones registradas."}
-      </div>
-    </article>`;
-  }).join("") : `<div class="no-events">No hay registros para este indicador.</div>`;
+
+  let rows=[];
+  if(type==="eventos"){ title.textContent="TOTAL EVENTOS"; rows=events; }
+  else if(type==="hoy"){ title.textContent="EVENTOS DE HOY"; rows=events.filter(e=>e.fecha===toISODate(new Date())); }
+  else if(type==="proximo"){ title.textContent="PRÓXIMO EVENTO"; rows=events.filter(e=>e.fecha===toISODate(new Date())); }
+  else { rows=events; }
+
+  info.textContent=`${rows.length} registro(s)`;
+  list.innerHTML = rows.length ? operativoRows(rows) : `<div class="no-events">No hay eventos.</div>`;
   document.getElementById("kpiModal").classList.remove("hidden");
 }
 function closeKpiModal() { document.getElementById("kpiModal").classList.add("hidden"); }
