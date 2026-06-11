@@ -318,7 +318,7 @@ function updateKPIs() {
   document.getElementById("kpiTotal").textContent = events.length;
   const hoyIso = toISODate(new Date());
   const hoyEventos = events.filter(e => e.fecha === hoyIso);
-  document.getElementById("kpiDone").textContent = hoyEventos.length;
+  document.getElementById("kpiDone").textContent = hoyEventos.length; // HOY
   document.getElementById("kpiPending").textContent = events.filter(e => normalize(e.estado).includes("pend")).length;
   const ahora = new Date();
   let proximoTxt = "0";
