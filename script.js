@@ -390,22 +390,79 @@ function openKpiModal(type) {
   const info = document.getElementById("kpiModalInfo");
   const events = monthEvents().sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.hora.localeCompare(b.hora));
 
-  function operativoRows(rows){
-    return rows.map(e=>{
-      const reqs=(e.requerimientos||"").split("/").map(x=>x.trim()).filter(Boolean)
-        .map(r=>`<li>${r}</li>`).join("");
-      return `<article class="kpi-row">
-      <div class="kpi-row-title">${e.hora} | ${e.ubicacion||"-"}</div>
-      <div class="kpi-meta"><b>${e.evento}</b></div>
-      <ul>${reqs}</ul>
-      </article>`;
-    }).join("");
-  }
+ function operativoRows(rows){
+
+return `
+<div class="agenda-resumen">
+
+${rows.map(e=>`
+
+<div class="agenda-item">
+
+<div class="agenda-hora">
+${e.hora}
+</div>
+
+<div class="agenda-evento">
+
+<div class="agenda-titulo">
+${e.evento}
+</div>
+
+<div class="agenda-ambiente">
+📍 ${e.ubicacion || "-"}
+</div>
+
+<div class="agenda-req">
+${(e.requerimientos||"")
+.split("/")
+.map(x=>`<span>${x.trim()}</span>`)
+.join("")}
+</div>
+
+</div>
+
+</div>
+
+`).join("")}
+
+</div>
+`;
+}
 
   let rows=[];
-  if(type==="eventos"){ title.textContent="TOTAL EVENTOS"; rows=events; }
-  else if(type==="hoy"){ title.textContent="EVENTOS DE HOY"; rows=events.filter(e=>e.fecha===toISODate(new Date())); }
-  else if(type==="proximo"){ title.textContent="PRÓXIMO EVENTO"; rows=events.filter(e=>e.fecha===toISODate(new Date())); }
+
+if(type==="eventos"){
+   title.textContent="TOTAL EVENTOS";
+   rows=events;
+}
+
+else if(type==="hoy"){
+   title.textContent="EVENTOS DE HOY";
+   rows=events.filter(e=>e.fecha===toISODate(new Date()));
+}
+
+else if(type==="proximo"){
+
+   title.textContent="PRÓXIMO EVENTO";
+
+   const ahora = new Date();
+
+   rows = events.filter(e=>{
+
+      if(e.fecha !== toISODate(new Date())) return false;
+
+      const [h,m] = String(e.hora||"00:00").split(":");
+
+      const d = new Date();
+      d.setHours(+h||0,+m||0,0,0);
+
+      return d > ahora;
+
+   }).sort((a,b)=>a.hora.localeCompare(b.hora));
+
+   rows = rows.slice(0,1);
+}
   else { rows=events; }
 
   info.textContent=`${rows.length} registro(s)`;
