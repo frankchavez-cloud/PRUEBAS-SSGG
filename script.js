@@ -503,28 +503,34 @@ function updateFocusedCard() {
 
     if (!cards.length) return;
 
-    let closest = null;
-    let min = Infinity;
+ let closest = null;
+let minDistance = Infinity;
 
-    cards.forEach(card => {
+const centerLine =
+    container.scrollTop + (container.clientHeight / 2);
 
-        const distance = Math.abs(
-            card.offsetTop - container.scrollTop
-        );
+cards.forEach(card => {
 
-        card.classList.remove("focused");
+    const cardCenter =
+        card.offsetTop + (card.offsetHeight / 2);
 
-        if (distance < min) {
-            min = distance;
-            closest = card;
-        }
+    const distance =
+        Math.abs(centerLine - cardCenter);
 
-    });
+    card.classList.remove("focused");
 
-    if (closest) {
-        closest.classList.add("focused");
+    if (distance < minDistance) {
+        minDistance = distance;
+        closest = card;
     }
+});
+
+if (closest) {
+    closest.classList.add("focused");
+}
 
 }
 document.getElementById("eventScroll").addEventListener("scroll", updateFocusedCard);
 document.addEventListener("keydown", e => { if (e.key === "Escape") { closeModal(); closeKpiModal(); } });
+
+setTimeout(updateFocusedCard,100);
