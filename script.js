@@ -494,6 +494,19 @@ function updateFocusedCard() {
         container.querySelectorAll(".event-card");
 
     if (!cards.length) return;
+    if (
+    container.scrollTop + container.clientHeight >=
+    container.scrollHeight - 20
+) {
+    cards.forEach(card =>
+        card.classList.remove("focused")
+    );
+
+    cards[cards.length - 1]
+        .classList.add("focused");
+
+    return;
+}
 
     let closest = null;
 
