@@ -319,7 +319,10 @@ function updateKPIs() {
   const hoyIso = toISODate(new Date());
   const hoyEventos = events.filter(e => e.fecha === hoyIso);
   document.getElementById("kpiDone").textContent = hoyEventos.length; // HOY
-  document.getElementById("kpiPending").textContent = events.filter(e => normalize(e.estado).includes("pend")).length;
+  const manana = new Date();
+  manana.setDate(manana.getDate()+1);
+  const mananaIso = toISODate(manana);
+  document.getElementById("kpiPending").textContent = events.filter(e => e.fecha === mananaIso).length;
   const ahora = new Date();
   let proximoTxt = "0";
   const futuros = hoyEventos.filter(e => e.hora).map(e=>{
@@ -440,6 +443,13 @@ if(type==="eventos"){
 else if(type==="hoy"){
    title.textContent="EVENTOS DE HOY";
    rows=events.filter(e=>e.fecha===toISODate(new Date()));
+}
+
+else if(type==="manana"){
+   title.textContent="EVENTOS DE MAÑANA";
+   const manana = new Date();
+   manana.setDate(manana.getDate()+1);
+   rows = events.filter(e=>e.fecha===toISODate(manana));
 }
 
 else if(type==="proximo"){
