@@ -487,39 +487,43 @@ function closeKpiModal() { document.getElementById("kpiModal").classList.add("hi
 
 function updateFocusedCard() {
 
-    const container = document.getElementById("eventScroll");
+    const container =
+        document.getElementById("eventScroll");
 
-    const cards = container.querySelectorAll(".event-card");
+    const cards =
+        container.querySelectorAll(".event-card");
 
     if (!cards.length) return;
 
- let closest = null;
-let minDistance = Infinity;
+    let closest = null;
 
-const centerLine =
-    container.scrollTop + (container.clientHeight / 2);
+    cards.forEach(card => {
 
-cards.forEach(card => {
+        const rect =
+            card.getBoundingClientRect();
 
-    const cardCenter =
-        card.offsetTop + (card.offsetHeight / 2);
+        const modalTop =
+            container.getBoundingClientRect().top;
 
-    const distance =
-        Math.abs(centerLine - cardCenter);
+        if (rect.top >= modalTop - 50) {
 
-    card.classList.remove("focused");
+            if (!closest) {
+                closest = card;
+            }
 
-    if (distance < minDistance) {
-        minDistance = distance;
-        closest = card;
+        }
+
+    });
+
+    cards.forEach(card => {
+        card.classList.remove("focused");
+    });
+
+    if (closest) {
+        closest.classList.add("focused");
     }
-});
-
-if (closest) {
-    closest.classList.add("focused");
 }
 
-}
 document.getElementById("eventScroll").addEventListener("scroll", updateFocusedCard);
 document.addEventListener("keydown", e => { if (e.key === "Escape") { closeModal(); closeKpiModal(); } });
 
