@@ -382,7 +382,21 @@ function openModal(iso) {
   showModalTab("eventos");
   modal.classList.remove("hidden");
   scroll.scrollTop = 0;
-  setTimeout(updateFocusedCard, 100);
+
+setTimeout(() => {
+
+  const cards =
+    document.querySelectorAll("#eventScroll .event-card");
+
+  cards.forEach(c =>
+    c.classList.remove("focused")
+  );
+
+  if(cards.length){
+    cards[0].classList.add("focused");
+  }
+
+},100);
 }
 function closeModal() { document.getElementById("eventModal").classList.add("hidden"); }
 
@@ -482,18 +496,35 @@ else if(type==="proximo"){
 function closeKpiModal() { document.getElementById("kpiModal").classList.add("hidden"); }
 
 function updateFocusedCard() {
-  const container = document.getElementById("eventScroll");
-  const cards = container.querySelectorAll(".event-card");
-  if (!cards.length) return;
-  const center = container.getBoundingClientRect().top + container.clientHeight/2;
-  let closest = null, min = Infinity;
-  cards.forEach(card => {
-    const rect = card.getBoundingClientRect();
-    const distance = Math.abs(center - (rect.top + rect.height/2));
-    card.classList.remove("focused");
-    if (distance < min) { min = distance; closest = card; }
-  });
-  if (closest) closest.classList.add("focused");
+
+    const container = document.getElementById("eventScroll");
+
+    const cards = container.querySelectorAll(".event-card");
+
+    if (!cards.length) return;
+
+    let closest = null;
+    let min = Infinity;
+
+    cards.forEach(card => {
+
+        const distance = Math.abs(
+            card.offsetTop - container.scrollTop
+        );
+
+        card.classList.remove("focused");
+
+        if (distance < min) {
+            min = distance;
+            closest = card;
+        }
+
+    });
+
+    if (closest) {
+        closest.classList.add("focused");
+    }
+
 }
 document.getElementById("eventScroll").addEventListener("scroll", updateFocusedCard);
 document.addEventListener("keydown", e => { if (e.key === "Escape") { closeModal(); closeKpiModal(); } });
