@@ -382,21 +382,11 @@ function openModal(iso) {
   showModalTab("eventos");
   modal.classList.remove("hidden");
   scroll.scrollTop = 0;
+ 
+  setTimeout(() => {
+    updateFocusedCard();
+}, 200);
 
-setTimeout(() => {
-
-  const cards =
-    document.querySelectorAll("#eventScroll .event-card");
-
-  cards.forEach(c =>
-    c.classList.remove("focused")
-  );
-
-  if(cards.length){
-    cards[0].classList.add("focused");
-  }
-
-},100);
 }
 function closeModal() { document.getElementById("eventModal").classList.add("hidden"); }
 
