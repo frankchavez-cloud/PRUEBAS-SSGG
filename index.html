@@ -4,7 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DASHBOARD GERENCIAL | CAMPUS VILLA</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
+function openCostosModal(){
+ document.getElementById('costosModal').classList.add('open');
+ document.getElementById('csTotal').textContent='S/ 25.2K';
+ document.getElementById('csAprobado').textContent='S/ 9.9K';
+ document.getElementById('csPendiente').textContent='S/ 15.3K';
+ document.getElementById('csOT').textContent='5';
+ document.getElementById('csProv').textContent='3';
+}
+function closeCostosModal(){
+ document.getElementById('costosModal').classList.remove('open');
+}
+
+</script>
 <style>
 :root{
   --vino:#5A0018;
@@ -253,7 +266,7 @@ tr:hover{background:#FAFAFA}
         <div class="value" id="sumAtendidos">0</div>
         <div class="hint">Registros cerrados operativamente</div>
       </div>
-      <div class="summary-card costos" onclick="alert('Módulo Costos Sanitarios - V12.5')">
+      <div class="summary-card costos" onclick="openCostosModal()">
         <div class="label">💰 Costos Sanitarios</div>
         <div class="value">5</div>
         <div class="hint">OT Activas</div>
@@ -810,6 +823,39 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeDetailModal(
 renderPills();
 render();
 cargarExcelSharePoint();
+
+function openCostosModal(){
+ document.getElementById('costosModal').classList.add('open');
+ document.getElementById('csTotal').textContent='S/ 25.2K';
+ document.getElementById('csAprobado').textContent='S/ 9.9K';
+ document.getElementById('csPendiente').textContent='S/ 15.3K';
+ document.getElementById('csOT').textContent='5';
+ document.getElementById('csProv').textContent='3';
+}
+function closeCostosModal(){
+ document.getElementById('costosModal').classList.remove('open');
+}
+
 </script>
+
+<div class="modal-overlay" id="costosModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>💰 Control de Costos Sanitarios - V12.6</h2>
+      <button class="modal-close" onclick="closeCostosModal()">Cerrar ✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="grid-kpis" style="margin-bottom:15px">
+        <div class="kpi total"><div class="num" id="csTotal">-</div><div class="lbl">Gasto Total</div></div>
+        <div class="kpi atendido"><div class="num" id="csAprobado">-</div><div class="lbl">Aprobado</div></div>
+        <div class="kpi proceso"><div class="num" id="csPendiente">-</div><div class="lbl">Por Aprobar</div></div>
+        <div class="kpi villa"><div class="num" id="csOT">-</div><div class="lbl">OT Registradas</div></div>
+        <div class="kpi asignar"><div class="num" id="csProv">-</div><div class="lbl">Proveedores</div></div>
+      </div>
+      <p><b>Versión 12.6:</b> módulo financiero sanitario habilitado.</p>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
