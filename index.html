@@ -4,20 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DASHBOARD GERENCIAL | CAMPUS VILLA</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
-function openCostosModal(){
- document.getElementById('costosModal').classList.add('open');
- document.getElementById('csTotal').textContent='S/ 25.2K';
- document.getElementById('csAprobado').textContent='S/ 9.9K';
- document.getElementById('csPendiente').textContent='S/ 15.3K';
- document.getElementById('csOT').textContent='5';
- document.getElementById('csProv').textContent='3';
-}
-function closeCostosModal(){
- document.getElementById('costosModal').classList.remove('open');
-}
-
-</script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
   --vino:#5A0018;
@@ -266,7 +253,7 @@ tr:hover{background:#FAFAFA}
         <div class="value" id="sumAtendidos">0</div>
         <div class="hint">Registros cerrados operativamente</div>
       </div>
-      <div class="summary-card costos" onclick="openCostosModal()">
+      <div class="summary-card costos" onclick="alert('Módulo Costos Sanitarios - V12.5')">
         <div class="label">💰 Costos Sanitarios</div>
         <div class="value">5</div>
         <div class="hint">OT Activas</div>
@@ -719,7 +706,8 @@ function render(){
 
   document.getElementById("sumTotal").textContent=total;
   document.getElementById("sumAtendidos").textContent=atendidos;
-
+  document.getElementById("sumPendientes").textContent=pendientes;
+  document.getElementById("sumCriticas").textContent=criticas;
   document.getElementById("sumProgress").style.width=cumplimiento+"%";
   document.getElementById("sumProgressText").textContent=cumplimiento+"% de cumplimiento";
 
@@ -823,39 +811,38 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeDetailModal(
 renderPills();
 render();
 cargarExcelSharePoint();
-
-function openCostosModal(){
- document.getElementById('costosModal').classList.add('open');
- document.getElementById('csTotal').textContent='S/ 25.2K';
- document.getElementById('csAprobado').textContent='S/ 9.9K';
- document.getElementById('csPendiente').textContent='S/ 15.3K';
- document.getElementById('csOT').textContent='5';
- document.getElementById('csProv').textContent='3';
-}
-function closeCostosModal(){
- document.getElementById('costosModal').classList.remove('open');
-}
-
 </script>
 
-<div class="modal-overlay" id="costosModal">
-  <div class="modal-box">
-    <div class="modal-head">
-      <h2>💰 Control de Costos Sanitarios - V12.6</h2>
-      <button class="modal-close" onclick="closeCostosModal()">Cerrar ✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="grid-kpis" style="margin-bottom:15px">
-        <div class="kpi total"><div class="num" id="csTotal">-</div><div class="lbl">Gasto Total</div></div>
-        <div class="kpi atendido"><div class="num" id="csAprobado">-</div><div class="lbl">Aprobado</div></div>
-        <div class="kpi proceso"><div class="num" id="csPendiente">-</div><div class="lbl">Por Aprobar</div></div>
-        <div class="kpi villa"><div class="num" id="csOT">-</div><div class="lbl">OT Registradas</div></div>
-        <div class="kpi asignar"><div class="num" id="csProv">-</div><div class="lbl">Proveedores</div></div>
-      </div>
-      <p><b>Versión 12.6:</b> módulo financiero sanitario habilitado.</p>
-    </div>
-  </div>
-</div>
+<script>
+let costosData=[];
+async function cargarCostosSanitarios(){
+ try{
+  const r=await fetch("./COSTOS SANITARIOS.xlsx?v="+Date.now(),{cache:"no-store"});
+  const ab=await r.arrayBuffer();
+  const wb=XLSX.read(ab,{type:"array",cellDates:true});
+  const data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:""});
+  const h=data[0].map(x=>String(x).trim());
+  costosData=data.slice(1).filter(x=>x[1]).map(x=>Object.fromEntries(h.map((k,i)=>[k,x[i]])));
+ }catch(e){console.log(e)}
+}
+function money(v){return Number(String(v).replace(/[^\d.-]/g,"")||0)}
+function openCostosModal(){
+ document.getElementById('costosModal').classList.add('open');
+ let total=costosData.reduce((a,b)=>a+money(b.MONTO),0);
+ let apro=costosData.filter(x=>String(x.ESTADO).includes("APROBADO")).reduce((a,b)=>a+money(b.MONTO),0);
+ let prov=[...new Set(costosData.map(x=>x.PROVEEDOR).filter(Boolean))].length;
+ document.getElementById('csTotal').textContent='S/ '+(total/1000).toFixed(1)+'K';
+ document.getElementById('csAprobado').textContent='S/ '+(apro/1000).toFixed(1)+'K';
+ document.getElementById('csPendiente').textContent='S/ '+((total-apro)/1000).toFixed(1)+'K';
+ document.getElementById('csOT').textContent=costosData.length;
+ document.getElementById('csProv').textContent=prov;
+ document.getElementById('csTabla').innerHTML=costosData.map(x=>`<tr>
+ <td>${x.OT||''}</td><td>${x["DETALLES O REQUERIMIENTO"]||''}</td><td>${x.SEDE||''}</td>
+ <td>${x["N° SOLIC"]||''}</td><td>${x["N° O.C"]||''}</td><td>${x.MONTO||''}</td>
+ <td>${x.ESTADO||''}</td><td>${x.PROVEEDOR||''}</td></tr>`).join('');
+}
+cargarCostosSanitarios();
+</script>
 
 </body>
 </html>
