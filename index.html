@@ -253,7 +253,7 @@ tr:hover{background:#FAFAFA}
         <div class="value" id="sumAtendidos">0</div>
         <div class="hint">Registros cerrados operativamente</div>
       </div>
-      <div class="summary-card costos" onclick="alert('Módulo Costos Sanitarios - V12.5')">
+      <div class="summary-card costos" onclick="openCostosModal()">
         <div class="label">💰 Costos Sanitarios</div>
         <div class="value">5</div>
         <div class="hint">OT Activas</div>
@@ -371,6 +371,32 @@ tr:hover{background:#FAFAFA}
       </div>
     </div>
   </div>
+</div>
+
+
+
+<div class="modal-overlay" id="costosModal">
+ <div class="modal-box">
+  <div class="modal-head">
+   <h2>💰 Control de Costos Sanitarios - V12.7</h2>
+   <button class="modal-close" onclick="document.getElementById('costosModal').classList.remove('open')">Cerrar ✕</button>
+  </div>
+  <div class="modal-body">
+   <div class="grid-kpis">
+    <div class="kpi total"><div class="num" id="csTotal">0</div><div class="lbl">Gasto total</div></div>
+    <div class="kpi atendido"><div class="num" id="csAprobado">0</div><div class="lbl">Aprobado</div></div>
+    <div class="kpi proceso"><div class="num" id="csPendiente">0</div><div class="lbl">Por aprobar</div></div>
+    <div class="kpi villa"><div class="num" id="csOT">0</div><div class="lbl">OT Registradas</div></div>
+    <div class="kpi asignar"><div class="num" id="csProv">0</div><div class="lbl">Proveedores</div></div>
+   </div><br>
+   <div class="modal-table-wrap">
+    <table>
+     <thead><tr><th>OT</th><th>Requerimiento</th><th>Sede</th><th>Solicitud</th><th>OC</th><th>Monto</th><th>Estado</th><th>Proveedor</th></tr></thead>
+     <tbody id="csTabla"></tbody>
+    </table>
+   </div>
+  </div>
+ </div>
 </div>
 
 <script>
@@ -706,8 +732,12 @@ function render(){
 
   document.getElementById("sumTotal").textContent=total;
   document.getElementById("sumAtendidos").textContent=atendidos;
-  document.getElementById("sumPendientes").textContent=pendientes;
-  document.getElementById("sumCriticas").textContent=criticas;
+  if(document.getElementById("sumPendientes")){
+    document.getElementById("sumPendientes").textContent=pendientes;
+  }
+  if(document.getElementById("sumCriticas")){
+    document.getElementById("sumCriticas").textContent=criticas;
+  }
   document.getElementById("sumProgress").style.width=cumplimiento+"%";
   document.getElementById("sumProgressText").textContent=cumplimiento+"% de cumplimiento";
 
