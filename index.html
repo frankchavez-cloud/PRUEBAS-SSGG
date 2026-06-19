@@ -866,10 +866,16 @@ function openCostosModal(){
  document.getElementById('csPendiente').textContent='S/ '+((total-apro)/1000).toFixed(1)+'K';
  document.getElementById('csOT').textContent=costosData.length;
  document.getElementById('csProv').textContent=prov;
- document.getElementById('csTabla').innerHTML=costosData.map(x=>`<tr>
- <td>${x.OT||''}</td><td>${x["DETALLES O REQUERIMIENTO"]||''}</td><td>${x.SEDE||''}</td>
- <td>${x["N° SOLIC"]||''}</td><td>${x["N° O.C"]||''}</td><td>${x.MONTO||''}</td>
- <td>${x.ESTADO||''}</td><td>${x.PROVEEDOR||''}</td></tr>`).join('');
+document.getElementById('csTabla').innerHTML=costosData.map(x=>`<tr>
+<td>${x.OT||''}</td>
+<td>${x["REQUERIMIENTO"]||x["DETALLES O REQUERIMIENTO"]||''}</td>
+<td>${x.SEDE||''}</td>
+<td>${x["SOLICITUD"]||x["N° SOLIC"]||''}</td>
+<td>${x["OC"]||x["N° O.C"]||''}</td>
+<td>${x.MONTO||''}</td>
+<td>${x.ESTADO||''}</td>
+<td>${x.PROVEEDOR||''}</td>
+</tr>`).join('');
 }
 cargarCostosSanitarios();
 </script>
